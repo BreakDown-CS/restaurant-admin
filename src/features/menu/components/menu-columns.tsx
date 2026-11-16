@@ -2,6 +2,7 @@ import { Tag } from 'antd'
 import type { TableColumnsType } from 'antd'
 import type { MenuItem } from '../schemas'
 import { formatPrice } from '@/lib/format'
+import { DeleteMenuButton } from './delete-menu-button'
 
 export const menuColumns: TableColumnsType<MenuItem> = [
   { title: 'ชื่อเมนู', dataIndex: 'name' },
@@ -23,5 +24,10 @@ export const menuColumns: TableColumnsType<MenuItem> = [
         <Tag color="red">หมด</Tag>
       )
     },
+  },
+  {
+    key: 'actions',
+    align: 'right',
+    render: (_, menu) => <DeleteMenuButton menu={menu} />,
   },
 ]

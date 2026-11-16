@@ -56,4 +56,16 @@ export const handlers = [
 
     return HttpResponse.json(menu, { status: 201 })
   }),
+
+  http.delete(`${env.VITE_API_URL}/menus/:id`, ({ params }) => {
+    const index = menus.findIndex((menu) => menu.id === params.id)
+
+    if (index === -1) {
+      return new HttpResponse(null, { status: 404 })
+    }
+
+    menus.splice(index, 1)
+
+    return new HttpResponse(null, { status: 204 })
+  }),
 ]
