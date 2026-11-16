@@ -1,4 +1,5 @@
 import { HttpResponse, http } from 'msw'
+import { menuInputSchema } from '@/features/menu/schemas'
 import type { MenuItem } from '@/features/menu/schemas'
 import { env } from '@/lib/env'
 
@@ -42,4 +43,17 @@ const menus: MenuItem[] = [
 
 export const handlers = [
   http.get(`${env.VITE_API_URL}/menus`, () => HttpResponse.json(menus)),
+
+  http.post(`${env.VITE_API_URL}/menus`, async ({ request }) => {
+    const result = menuInputSchema.safeParse(await request.json())
+
+    if (!result.success) {
+      return HttpResponse.json({ message: 'Invalid menu' }, { status: 400 })
+    }
+
+    const menu: MenuItem = { id: crypto.randomUUID(), ...result.data }
+    menus.push(menu)
+
+    return HttpResponse.json(menu, { status: 201 })
+  }),
 ]
