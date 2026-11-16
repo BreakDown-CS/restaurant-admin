@@ -3,6 +3,8 @@ import type { QueryClient } from '@tanstack/react-query'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
+import { App as AntApp, ConfigProvider } from 'antd'
+import thTH from 'antd/locale/th_TH'
 
 import '@/styles.css'
 
@@ -17,7 +19,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
   return (
     <>
-      <Outlet />
+      <ConfigProvider locale={thTH}>
+        <AntApp>
+          <Outlet />
+        </AntApp>
+      </ConfigProvider>
       <TanStackDevtools
         config={{
           position: 'bottom-right',
