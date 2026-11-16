@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form'
 import { FormField } from '@/components/form/form-field'
 import { useCreateMenu } from '../api/use-create-menu'
 import { menuInputSchema } from '../schemas'
-import type { MenuInput } from '../schemas'
+import type { MenuInput, MenuItem } from '../schemas'
+import { useUpdateMenu } from '../api/use-update-menu'
 
 const emptyMenu: MenuInput = {
   name: '',
@@ -14,42 +15,44 @@ const emptyMenu: MenuInput = {
 }
 
 interface MenuFormModalProps {
-  open: boolean
+  menu?: MenuItem
   onClose: () => void
 }
 
-export function MenuFormModal({ open, onClose }: MenuFormModalProps) {
+export function MenuFormModal({ menu, onClose }: MenuFormModalProps) {
   const { message } = App.useApp()
   const createMenu = useCreateMenu()
-  const { control, handleSubmit, reset } = useForm<MenuInput>({
+  const updateMenu = useUpdateMenu()
+  const { control, handleSubmit } = useForm<MenuInput>({
     resolver: zodResolver(menuInputSchema),
-    defaultValues: emptyMenu,
+    defaultValues: menu ?? emptyMenu,
   })
 
-  const close = () => {
-    reset()
-    onClose()
+  const callbacks: { onSuccess: () => void; onError: () => void } = {
+    onSuccess: () => {
+      message.success(menu ? 'บันทึกการแก้ไขแล้ว' : 'เพิ่มเมนูแล้ว')
+      onClose()
+    },
+    onError: () => message.error('บันทึกไม่สำเร็จ'),
   }
 
   const submit = handleSubmit((values) => {
-    createMenu.mutate(values, {
-      onSuccess: () => {
-        message.success('เพิ่มเมนูแล้ว')
-        close()
-      },
-      onError: () => message.error('เพิ่มเมนูไม่สำเร็จ'),
-    })
+    if (menu) {
+      updateMenu.mutate({ id: menu.id, input: values }, callbacks)
+    } else {
+      createMenu.mutate(values, callbacks)
+    }
   })
 
   return (
     <Modal
-      title="เพิ่มเมนู"
-      open={open}
+      open
+      title={menu ? 'แก้ไขเมนู' : 'เพิ่มเมนู'}
       okText="บันทึก"
       cancelText="ยกเลิก"
-      confirmLoading={createMenu.isPending}
+      confirmLoading={createMenu.isPending || updateMenu.isPending}
       onOk={() => void submit()}
-      onCancel={close}
+      onCancel={onClose}
     >
       <Form layout="vertical" component={false}>
         <FormField control={control} name="name" label="ชื่อเมนู">

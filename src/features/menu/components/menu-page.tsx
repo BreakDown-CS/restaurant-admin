@@ -20,7 +20,7 @@ export function MenuPage() {
         </Button>
       </Flex>
       <Table rowKey="id" columns={menuColumns} dataSource={menus} />
-      <MenuFormModal open={isFormOpen} onClose={() => setIsFormOpen(false)} />
+      {isFormOpen && <MenuFormModal onClose={() => setIsFormOpen(false)} />}
     </>
   )
 }

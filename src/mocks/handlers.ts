@@ -68,4 +68,22 @@ export const handlers = [
 
     return new HttpResponse(null, { status: 204 })
   }),
+
+  http.put(`${env.VITE_API_URL}/menus/:id`, async ({ params, request }) => {
+    const index = menus.findIndex((menu) => menu.id === params.id)
+
+    if (index === -1) {
+      return new HttpResponse(null, { status: 404 })
+    }
+
+    const result = menuInputSchema.safeParse(await request.json())
+
+    if (!result.success) {
+      return HttpResponse.json({ message: 'Invalid menu' }, { status: 400 })
+    }
+
+    const menu: MenuItem = { id: menus[index].id, ...result.data }
+    menus[index] = menu
+    return HttpResponse.json(menu)
+  }),
 ]
