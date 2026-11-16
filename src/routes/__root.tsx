@@ -4,6 +4,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { App as AntApp, ConfigProvider } from 'antd'
+import { AdminLayout } from '@/components/layout/admin-layout'
 import thTH from 'antd/locale/th_TH'
 
 import '@/styles.css'
@@ -21,7 +22,9 @@ function RootComponent() {
     <>
       <ConfigProvider locale={thTH}>
         <AntApp>
-          <Outlet />
+          <AdminLayout>
+            <Outlet />
+          </AdminLayout>
         </AntApp>
       </ConfigProvider>
       <TanStackDevtools
