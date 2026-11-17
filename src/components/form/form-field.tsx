@@ -15,7 +15,9 @@ interface FormFieldProps<
   control: Control<TValues>
   name: TName
   label: string
-  children: (field: ControllerRenderProps<TValues, TName>) => ReactNode
+  children: (
+    field: ControllerRenderProps<TValues, TName> & { id: string },
+  ) => ReactNode
 }
 
 export function FormField<
@@ -29,10 +31,11 @@ export function FormField<
       render={({ field, fieldState }) => (
         <Form.Item
           label={label}
+          htmlFor={name}
           validateStatus={fieldState.error ? 'error' : undefined}
           help={fieldState.error?.message}
         >
-          {children(field)}
+          {children({ ...field, id: name })}
         </Form.Item>
       )}
     />

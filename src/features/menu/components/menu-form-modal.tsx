@@ -68,7 +68,11 @@ export function MenuFormModal({ menu, onClose }: MenuFormModalProps) {
         </FormField>
         <FormField control={control} name="isAvailable" label="พร้อมขาย">
           {(field) => (
-            <Switch checked={field.value} onChange={field.onChange} />
+            <Switch
+              id={field.id}
+              checked={field.value}
+              onChange={field.onChange}
+            />
           )}
         </FormField>
       </Form>
