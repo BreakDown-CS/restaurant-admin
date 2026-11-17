@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # CI has no .env file, so give the app safe placeholder values
+      VITE_API_URL: https://api.example.com
+      VITE_ENABLE_MOCKS: 'false'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+      # Vitest, TypeScript and Prettier run on Node, so pin the same version as local
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run lint
+      - run: bun run check
+      - run: bunx vitest run
+      - run: bun run build
