@@ -1,0 +1,14 @@
+# Runs automatically on every commit — install once with: bunx lefthook install
+# Lint and typecheck are slow here, so CI enforces them instead (see Phase 7)
+pre-commit:
+  jobs:
+    - name: format
+      glob: '*.{ts,tsx,js,json,css,md,yml}'
+      # Formatting is mechanical, so fix it and re-stage instead of failing
+      run: bunx prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: bunx commitlint --edit {1}
