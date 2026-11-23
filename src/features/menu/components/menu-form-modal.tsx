@@ -60,7 +60,13 @@ export function MenuFormModal({ menu, onClose }: MenuFormModalProps) {
         </FormField>
         <FormField control={control} name="price" label="ราคา">
           {(field) => (
-            <InputNumber {...field} min={0} prefix="฿" className="w-full" />
+            <InputNumber
+              {...field}
+              min={0}
+              precision={2}
+              prefix="฿"
+              className="w-full"
+            />
           )}
         </FormField>
         <FormField control={control} name="category" label="หมวดหมู่">
