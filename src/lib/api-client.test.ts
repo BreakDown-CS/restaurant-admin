@@ -1,17 +1,18 @@
 import { HttpResponse, http } from 'msw'
-import { z, ZodError } from 'zod'
 import { describe, expect, it } from 'vitest'
 import { server } from '@/mocks/server'
 import { apiClient } from './api-client'
 import { ApiError } from './api-error'
 import { env } from './env'
+import { z, ZodError } from 'zod'
 
 const itemUrl = `${env.VITE_API_URL}/items`
 const itemSchema = z.object({ id: z.string() })
+const ok = (data: unknown) => ({ success: true, message: 'Success', data })
 
 describe('apiClient', () => {
   it('returns the parsed data on success', async () => {
-    server.use(http.get(itemUrl, () => HttpResponse.json({ id: '1' })))
+    server.use(http.get(itemUrl, () => HttpResponse.json(ok({ id: '1' }))))
 
     await expect(apiClient.get('/items', itemSchema)).resolves.toEqual({
       id: '1',
@@ -23,7 +24,7 @@ describe('apiClient', () => {
     server.use(
       http.post(itemUrl, async ({ request }) => {
         receivedBody = await request.json()
-        return HttpResponse.json({ id: '2' }, { status: 201 })
+        return HttpResponse.json(ok({ id: '2' }), { status: 201 })
       }),
     )
 
@@ -45,17 +46,42 @@ describe('apiClient', () => {
     ).resolves.toBeUndefined()
   })
 
-  it('throws ApiError with the status when the server fails', async () => {
-    server.use(http.get(itemUrl, () => new HttpResponse(null, { status: 500 })))
+  it('reads code and details from the error envelope', async () => {
+    server.use(
+      http.get(itemUrl, () =>
+        HttpResponse.json(
+          {
+            success: false,
+            message: 'Invalid input',
+            error: { code: 'VALIDATION_FAILED', details: { name: 'required' } },
+          },
+          { status: 400 },
+        ),
+      ),
+    )
 
     const error = await apiClient.get('/items', itemSchema).catch((e) => e)
 
     expect(error).toBeInstanceOf(ApiError)
-    expect(error).toMatchObject({ status: 500 })
+    expect(error).toMatchObject({
+      status: 400,
+      message: 'Invalid input',
+      code: 'VALIDATION_FAILED',
+      details: { name: 'required' },
+    })
   })
 
-  it('throws ZodError when the response has the wrong shape', async () => {
-    server.use(http.get(itemUrl, () => HttpResponse.json({ id: 1 })))
+  it('still throws ApiError when the error body is not our envelope', async () => {
+    server.use(http.get(itemUrl, () => new HttpResponse(null, { status: 502 })))
+
+    const error = await apiClient.get('/items', itemSchema).catch((e) => e)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error).toMatchObject({ status: 502, code: 'UNKNOWN_ERROR' })
+  })
+
+  it('throws ZodError when data has the wrong shape', async () => {
+    server.use(http.get(itemUrl, () => HttpResponse.json(ok({ id: 1 }))))
 
     await expect(apiClient.get('/items', itemSchema)).rejects.toBeInstanceOf(
       ZodError,
