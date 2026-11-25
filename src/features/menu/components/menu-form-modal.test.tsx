@@ -14,7 +14,7 @@ describe('MenuFormModal', () => {
     await user.click(screen.getByRole('button', { name: 'บันทึก' }))
 
     expect(await screen.findByText('กรุณากรอกชื่อเมนู')).toBeInTheDocument()
-    expect(screen.getByText('กรุณาระบุหมวดหมู่')).toBeInTheDocument()
+    expect(screen.getByText('กรุณาเลือกหมวดหมู่')).toBeInTheDocument()
     expect(onClose).not.toHaveBeenCalled()
   })
 
@@ -26,7 +26,8 @@ describe('MenuFormModal', () => {
     await user.type(screen.getByLabelText('ชื่อเมนู'), 'ข้าวมันไก่')
     await user.clear(screen.getByLabelText('ราคา'))
     await user.type(screen.getByLabelText('ราคา'), '50')
-    await user.type(screen.getByLabelText('หมวดหมู่'), 'อาหารจานเดียว')
+    await user.click(screen.getByLabelText('หมวดหมู่'))
+    await user.click(await screen.findByText('อาหารจานเดียว'))
     await user.click(screen.getByRole('button', { name: 'บันทึก' }))
 
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce())
@@ -37,6 +38,7 @@ describe('MenuFormModal', () => {
       id: 'm1',
       name: 'ต้มยำกุ้ง',
       price: 120,
+      categoryId: '0190b9e0-0000-7000-8000-000000000002',
       category: 'ต้ม/แกง',
       isAvailable: true,
     }

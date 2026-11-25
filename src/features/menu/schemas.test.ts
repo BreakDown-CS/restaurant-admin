@@ -5,7 +5,7 @@ import type { MenuInput } from './schemas'
 const validMenu: MenuInput = {
   name: 'ข้าวผัดกุ้ง',
   price: 60,
-  category: 'อาหารจานเดียว',
+  categoryId: '0190b9e0-0000-7000-8000-000000000001',
   isAvailable: true,
 }
 
@@ -62,5 +62,11 @@ describe('menuInputSchema text', () => {
     const result = menuInputSchema.safeParse({ ...validMenu, name: ' ข้าวผัด ' })
 
     expect(result.data?.name).toBe('ข้าวผัด')
+  })
+
+  it('rejects a menu without a category with a Thai message', () => {
+    const result = menuInputSchema.safeParse({ ...validMenu, categoryId: '' })
+
+    expect(result.error?.issues[0]?.message).toBe('กรุณาเลือกหมวดหมู่')
   })
 })
