@@ -2,6 +2,7 @@ import { HttpResponse, http } from 'msw'
 import type { z } from 'zod'
 import { menuInputSchema } from '@/features/menu/schemas'
 import type { MenuItem } from '@/features/menu/schemas'
+import type { Category } from '@/features/category/schemas'
 import { env } from '@/lib/env'
 
 const ok = (data: unknown, status = 200) =>
@@ -25,38 +26,59 @@ const toDetails = (error: z.ZodError) =>
 
 const notFound = () => fail(404, 'NOT_FOUND', 'Menu not found')
 
+const riceCategory = { id: crypto.randomUUID(), name: 'อาหารจานเดียว' }
+const soupCategory = { id: crypto.randomUUID(), name: 'ต้อ/แกง' }
+const saladCategory = { id: crypto.randomUUID(), name: 'ยำ/ตำ' }
+const drinkCategory = { id: crypto.randomUUID(), name: 'เครื่องดื่ม' }
+
+const categories: Category[] = [
+  riceCategory,
+  soupCategory,
+  saladCategory,
+  drinkCategory,
+]
+
+const categoryOf = (categoryId: string) =>
+  categories.find((category) => category.id === categoryId)
+
 const menus: MenuItem[] = [
   {
     id: crypto.randomUUID(),
     name: 'ข้าวกะเพราหมูสับ',
     price: 59.5,
-    category: 'อาหารจานเดียว',
+    categoryId: riceCategory.id,
+    category: riceCategory.name,
     isAvailable: true,
   },
   {
     id: crypto.randomUUID(),
     name: 'ต้มยำกุ้งน้ำข้น',
     price: 150,
-    category: 'ต้ม/แกง',
+    categoryId: soupCategory.id,
+    category: soupCategory.name,
     isAvailable: true,
   },
   {
     id: crypto.randomUUID(),
     name: 'ส้มตำไทย',
     price: 45,
-    category: 'ยำ/ตำ',
+    categoryId: saladCategory.id,
+    category: saladCategory.name,
     isAvailable: false,
   },
   {
     id: crypto.randomUUID(),
     name: 'ชาไทยเย็น',
     price: 35,
-    category: 'เครื่องดื่ม',
+    categoryId: drinkCategory.id,
+    category: drinkCategory.name,
     isAvailable: true,
   },
 ]
 
 export const handlers = [
+  http.get(`${env.VITE_API_URL}/categories`, () => ok(categories)),
+
   http.get(`${env.VITE_API_URL}/menus`, () => ok(menus)),
 
   http.post(`${env.VITE_API_URL}/menus`, async ({ request }) => {
@@ -71,7 +93,18 @@ export const handlers = [
       )
     }
 
-    const menu: MenuItem = { id: crypto.randomUUID(), ...result.data }
+    const category = categoryOf(result.data.categoryId)
+    if (!category) {
+      return fail(400, 'VALIDATION_FAILED', 'Invalid input', {
+        categoryId: 'does not exist',
+      })
+    }
+
+    const menu: MenuItem = {
+      id: crypto.randomUUID(),
+      ...result.data,
+      category: category.name,
+    }
     menus.push(menu)
 
     return ok(menu, 201)
@@ -107,7 +140,18 @@ export const handlers = [
       )
     }
 
-    const menu: MenuItem = { id: menus[index].id, ...result.data }
+    const category = categoryOf(result.data.categoryId)
+    if (!category) {
+      return fail(400, 'VALIDATION_FAILED', 'Invalid input', {
+        categoryId: 'does not exist',
+      })
+    }
+
+    const menu: MenuItem = {
+      id: menus[index].id,
+      ...result.data,
+      category: category.name,
+    }
     menus[index] = menu
     return ok(menu)
   }),

@@ -14,16 +14,13 @@ export const menuItemSchema = z.object({
     .nonnegative({ error: 'ราคาห้ามติดลบ' })
     .multipleOf(0.01, { error: 'ราคามีทศนิยมได้ไม่เกิน 2 ตำแหน่ง' })
     .max(MAX_PRICE, { error: 'ราคาสูงเกินไป' }),
-  category: z
-    .string()
-    .trim()
-    .min(1, { error: 'กรุณาระบุหมวดหมู่' })
-    .max(50, { error: 'หมวดหมู่ยาวได้ไม่เกิน 50 ตัวอักษร' }),
+  categoryId: z.string().min(1, { error: 'กรุณาเลือกหมวดหมู่' }),
+  category: z.string(),
   isAvailable: z.boolean(),
 })
 
 export const menuListSchema = z.array(menuItemSchema)
 export type MenuItem = z.infer<typeof menuItemSchema>
 
-export const menuInputSchema = menuItemSchema.omit({ id: true })
+export const menuInputSchema = menuItemSchema.omit({ id: true, category: true })
 export type MenuInput = z.infer<typeof menuInputSchema>

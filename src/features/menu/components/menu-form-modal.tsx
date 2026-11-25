@@ -1,16 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { App, Form, Input, InputNumber, Modal, Switch } from 'antd'
+import { App, Form, Input, InputNumber, Modal, Select, Switch } from 'antd'
 import { useForm } from 'react-hook-form'
 import { FormField } from '@/components/form/form-field'
 import { useCreateMenu } from '../api/use-create-menu'
 import { menuInputSchema } from '../schemas'
 import type { MenuInput, MenuItem } from '../schemas'
 import { useUpdateMenu } from '../api/use-update-menu'
+import { categoryQueries } from '@/features/category'
+import { useQuery } from '@tanstack/react-query'
 
 const emptyMenu: MenuInput = {
   name: '',
   price: 0,
-  category: '',
+  categoryId: '',
   isAvailable: true,
 }
 
@@ -23,6 +25,7 @@ export function MenuFormModal({ menu, onClose }: MenuFormModalProps) {
   const { message } = App.useApp()
   const createMenu = useCreateMenu()
   const updateMenu = useUpdateMenu()
+  const categories = useQuery(categoryQueries.list())
   const { control, handleSubmit } = useForm<MenuInput>({
     resolver: zodResolver(menuInputSchema),
     defaultValues: menu ?? emptyMenu,
@@ -69,8 +72,18 @@ export function MenuFormModal({ menu, onClose }: MenuFormModalProps) {
             />
           )}
         </FormField>
-        <FormField control={control} name="category" label="หมวดหมู่">
-          {(field) => <Input {...field} />}
+        <FormField control={control} name="categoryId" label="หมวดหมู่">
+          {(field) => (
+            <Select
+              {...field}
+              placeholder="เลือกหมวดหมู่"
+              loading={categories.isPending}
+              options={(categories.data ?? []).map((category) => ({
+                value: category.id,
+                label: category.name,
+              }))}
+            />
+          )}
         </FormField>
         <FormField control={control} name="isAvailable" label="พร้อมขาย">
           {(field) => (
